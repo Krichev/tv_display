@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #1a1a2e;
+  --color-brand-light: #16213e;
+  --color-brand-accent: #0f3460;
+  --color-brand-highlight: #e94560;
+  
+  --breakpoint-tv: 1920px;
+}
+
+body {
+  background-color: var(--color-brand-dark);
+  color: white;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, sans-serif;
+}
