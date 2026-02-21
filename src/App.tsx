@@ -6,6 +6,7 @@ import { LobbyScreen } from './screens/LobbyScreen';
 import { QuestionScreen } from './screens/QuestionScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { AnswerRevealScreen } from './screens/AnswerRevealScreen';
+import { PuzzleDisplay } from './screens/PuzzleDisplay';
 
 function GameDisplay() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -56,17 +57,21 @@ function GameDisplay() {
 
 function Home() {
     const [code, setCode] = React.useState('');
+    const [isPuzzle, setIsPuzzle] = React.useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (code) navigate(`/${code.toUpperCase()}`);
+        if (code) {
+            const path = isPuzzle ? `/puzzle/${code.toUpperCase()}` : `/${code.toUpperCase()}`;
+            navigate(path);
+        }
     };
 
     return (
         <div className="h-screen w-screen bg-brand-dark flex flex-col items-center justify-center text-white">
             <h1 className="text-6xl font-bold mb-12">TV Display</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 <input 
                     className="text-4xl text-black px-8 py-4 rounded-xl text-center uppercase tracking-widest"
                     placeholder="ROOM CODE"
@@ -74,6 +79,17 @@ function Home() {
                     onChange={e => setCode(e.target.value)}
                     maxLength={6}
                 />
+                
+                <label className="flex items-center gap-3 cursor-pointer justify-center">
+                    <input 
+                        type="checkbox" 
+                        checked={isPuzzle} 
+                        onChange={e => setIsPuzzle(e.target.checked)}
+                        className="w-6 h-6 rounded"
+                    />
+                    <span className="text-xl font-medium">PUZZLE MODE</span>
+                </label>
+
                 <button className="bg-brand-highlight text-white text-2xl py-4 rounded-xl font-bold">START DISPLAY</button>
             </form>
         </div>
@@ -86,6 +102,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/:roomCode" element={<GameDisplay />} />
+        <Route path="/puzzle/:roomCode" element={<PuzzleDisplay />} />
       </Routes>
     </BrowserRouter>
   );
