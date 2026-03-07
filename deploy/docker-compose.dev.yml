@@ -4,7 +4,7 @@ services:
   tv-display-dev:
     image: ghcr.io/${GHCR_OWNER}/tv-display:dev-latest
     container_name: tv_display_dev
-    restart: unless-stopped
+    restart: on-failure:5
     ports:
       - "3000:80"
     environment:

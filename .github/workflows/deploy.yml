@@ -154,7 +154,7 @@ jobs:
               tv-display-${{ steps.vars.outputs.env }}:
                 image: ghcr.io/${{ steps.lower.outputs.owner }}/tv-display:${{ steps.vars.outputs.env }}-latest
                 container_name: tv_display_${{ steps.vars.outputs.env }}
-                restart: unless-stopped
+                restart: on-failure:5
                 ports:
                   - "${{ steps.vars.outputs.port }}:80"
                 environment:
