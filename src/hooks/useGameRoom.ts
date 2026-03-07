@@ -68,45 +68,10 @@ export function useGameRoom(roomCode: string): GameContextType {
     }
   }, [gameState.currentQuestionId]);
 
-  // Auto-login/register for TV
-  const authenticate = async () => {
-    if (tokenRef.current) return tokenRef.current;
-
-    const randomId = Math.random().toString(36).substring(7);
-    const username = `tv_display_${randomId}`;
-    const password = 'password';
-
-    try {
-      // Signup
-      await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email: `${username}@example.com`, password })
-      });
-
-      // Signin
-      const res = await fetch(`${API_URL}/auth/signin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const token = data.accessToken;
-        localStorage.setItem('tv_token', token);
-        tokenRef.current = token;
-        return token;
-      }
-    } catch (e) {
-      console.error("Auth failed", e);
-    }
-    return null;
-  };
-
   const connect = useCallback(async () => {
-    const token = await authenticate();
+    const token = localStorage.getItem('tv_token');
     if (!token) {
+        console.error("No TV token found. Pairing required.");
         setConnectionStatus('ERROR');
         return;
     }
@@ -158,7 +123,7 @@ export function useGameRoom(roomCode: string): GameContextType {
 
     client.activate();
     clientRef.current = client;
-  }, [roomCode]);
+  }, [roomCode, resolvedWsUrl]);
 
   useEffect(() => {
     connect();

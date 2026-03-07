@@ -23,10 +23,6 @@ export const JigsawPieceSvg: React.FC<JigsawPieceSvgProps> = React.memo(({
   playerName,
   animate = true
 }) => {
-  // Scaling factors
-  const scale = width / (piece.widthPx * (width / (piece.widthPx / 1.4))); // Heuristic
-  // Actually we should use the width/height of the container
-  
   return (
     <motion.div
       initial={animate ? { scale: 0, opacity: 0, x, y } : false}

@@ -33,7 +33,6 @@ export const PuzzleBoardScreen: React.FC<PuzzleBoardScreenProps> = ({
         // For Shared mode, all pieces go on one board.
         if (state.gameMode === 'SHARED') {
           const pieceMeta = pieces[pb.pieceIndex];
-          const isCorrect = pieceMeta?.pieceIndex === pb.pieceIndex; // Backend should send correct flag
           
           map[pb.pieceIndex] = {
             pieceIndex: pb.pieceIndex,

@@ -10,8 +10,9 @@ interface LobbyScreenProps {
 export const LobbyScreen: React.FC<LobbyScreenProps> = ({ gameContext }) => {
   const { roomCode, players, connectionStatus, gameState } = gameContext;
   
+  const code = roomCode || gameState.roomCode || '';
   // Use joinUrl from gameState if backend provides it, otherwise fallback
-  const joinUrl = (gameState as any).joinUrl || `${window.location.origin.replace('5173', '3000')}/join/${roomCode}`;
+  const joinUrl = (gameState as any).joinUrl || `${window.location.origin.replace('5173', '3000')}/join/${code}`;
 
   return (
     <div className="flex flex-col h-screen w-screen bg-brand-dark p-12">
@@ -29,7 +30,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({ gameContext }) => {
 
       <main className="flex-1 flex gap-12">
         <div className="w-1/3 flex flex-col items-center justify-center">
-            <RoomQRCode roomCode={roomCode} joinUrl={joinUrl} size={400} />
+            <RoomQRCode roomCode={code} joinUrl={joinUrl} size={400} />
         </div>
 
         <div className="w-2/3 bg-white/5 rounded-3xl p-8 flex flex-col">

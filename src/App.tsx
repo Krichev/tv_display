@@ -8,6 +8,9 @@ import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { AnswerRevealScreen } from './screens/AnswerRevealScreen';
 import { PuzzleDisplay } from './screens/PuzzleDisplay';
 
+import { useTvPairing } from './hooks/useTvPairing';
+import { PairingScreen } from './screens/PairingScreen';
+
 function GameDisplay() {
   const { roomCode } = useParams<{ roomCode: string }>();
   
@@ -56,44 +59,36 @@ function GameDisplay() {
 }
 
 function Home() {
-    const [code, setCode] = React.useState('');
-    const [isPuzzle, setIsPuzzle] = React.useState(false);
+    const { phase, pairingCode, roomCode, error, retry } = useTvPairing();
     const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (code) {
-            const path = isPuzzle ? `/puzzle/${code.toUpperCase()}` : `/${code.toUpperCase()}`;
-            navigate(path);
+    React.useEffect(() => {
+        if (phase === 'CLAIMED' && roomCode) {
+            navigate(`/${roomCode}`);
         }
-    };
+    }, [phase, roomCode, navigate]);
 
-    return (
-        <div className="h-screen w-screen bg-brand-dark flex flex-col items-center justify-center text-white">
-            <h1 className="text-6xl font-bold mb-12">TV Display</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <input 
-                    className="text-4xl text-black px-8 py-4 rounded-xl text-center uppercase tracking-widest"
-                    placeholder="ROOM CODE"
-                    value={code}
-                    onChange={e => setCode(e.target.value)}
-                    maxLength={6}
-                />
-                
-                <label className="flex items-center gap-3 cursor-pointer justify-center">
-                    <input 
-                        type="checkbox" 
-                        checked={isPuzzle} 
-                        onChange={e => setIsPuzzle(e.target.checked)}
-                        className="w-6 h-6 rounded"
-                    />
-                    <span className="text-xl font-medium">PUZZLE MODE</span>
-                </label>
+    if (phase === 'REGISTERING' || phase === 'IDLE') {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-brand-dark text-white">
+                <div className="text-4xl animate-pulse">Initializing TV Display...</div>
+            </div>
+        );
+    }
 
-                <button className="bg-brand-highlight text-white text-2xl py-4 rounded-xl font-bold">START DISPLAY</button>
-            </form>
-        </div>
-    );
+    if (phase === 'ERROR') {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-brand-dark text-red-500">
+                <div className="text-center">
+                    <div className="text-6xl font-bold mb-4">Error</div>
+                    <div className="text-2xl text-white">{error || 'Failed to initialize display'}</div>
+                    <button onClick={retry} className="mt-8 px-8 py-4 bg-white text-black text-xl rounded-xl">Retry</button>
+                </div>
+            </div>
+        );
+    }
+
+    return <PairingScreen pairingCode={pairingCode || '------'} />;
 }
 
 function App() {

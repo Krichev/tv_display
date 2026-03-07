@@ -4,11 +4,13 @@ import { motion } from 'framer-motion';
 
 interface RoomQRCodeProps {
   roomCode: string;
-  joinUrl: string;
+  joinUrl?: string;
   size?: number;
 }
 
 export const RoomQRCode: React.FC<RoomQRCodeProps> = ({ roomCode, joinUrl, size = 300 }) => {
+  const resolvedUrl = joinUrl || `${window.location.origin}/join/${roomCode}`;
+  
   return (
     <motion.div 
       initial={{ scale: 0.5, opacity: 0 }}
@@ -16,7 +18,7 @@ export const RoomQRCode: React.FC<RoomQRCodeProps> = ({ roomCode, joinUrl, size 
       className="flex flex-col items-center gap-6 bg-white p-8 rounded-3xl shadow-2xl"
     >
       <QRCodeSVG 
-        value={joinUrl} 
+        value={resolvedUrl} 
         size={size}
         level="M"
         includeMargin={false}

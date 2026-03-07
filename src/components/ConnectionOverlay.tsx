@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '../utils/cn';
+import { motion } from 'framer-motion';
 
 interface ConnectionOverlayProps {
   status: 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED' | 'ERROR';

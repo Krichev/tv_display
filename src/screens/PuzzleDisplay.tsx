@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { usePuzzleSpectator } from '../hooks/usePuzzleSpectator';
 import { ConnectionOverlay } from '../components/ConnectionOverlay';
 import { PuzzleLobbyScreen } from './PuzzleLobbyScreen';

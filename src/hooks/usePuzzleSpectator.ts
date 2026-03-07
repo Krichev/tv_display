@@ -3,7 +3,6 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { 
   PuzzleSpectatorContext, 
-  PuzzlePhase, 
   PuzzleStateMessage, 
   PiecePlacedMessage, 
   PlayerBoardSnapshot, 
@@ -24,7 +23,6 @@ export function usePuzzleSpectator(roomCode: string): PuzzleSpectatorContext {
   const [pieces, setPieces] = useState<Record<number, PieceMetadata>>({});
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [completedData, setCompletedData] = useState<PuzzleCompletedMessage | null>(null);
-  const [timeLeft, setTimeLeft] = useState(0);
 
   const clientRef = useRef<Client | null>(null);
   const tokenRef = useRef<string | null>(localStorage.getItem('tv_token'));
@@ -159,6 +157,6 @@ export function usePuzzleSpectator(roomCode: string): PuzzleSpectatorContext {
     pieces,
     recentEvents,
     completedData,
-    timeLeft
+    timeLeft: state?.timeLeftSeconds ?? 0
   };
 }
