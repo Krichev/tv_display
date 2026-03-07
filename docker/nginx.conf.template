@@ -1,0 +1,118 @@
+worker_processes auto;
+pid /tmp/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Logging
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent"';
+    access_log  /var/log/nginx/access.log  main;
+    error_log   /var/log/nginx/error.log   warn;
+
+    # Performance
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    keepalive_timeout  65;
+    types_hash_max_size 2048;
+    client_max_body_size 10M;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+
+    # Upstream — Challenger backend (configurable via env var)
+    upstream challenger_backend {
+        server ${BACKEND_URL};
+    }
+
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        # ── Security Headers ──────────────────────────────────────
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+        # ── API Reverse Proxy ─────────────────────────────────────
+        location /api/ {
+            proxy_pass http://challenger_backend/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Timeouts for API calls
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+
+        # ── WebSocket Reverse Proxy (STOMP/SockJS) ────────────────
+        location /ws-game {
+            proxy_pass http://challenger_backend/ws-game;
+            proxy_http_version 1.1;
+
+            # WebSocket upgrade headers
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # WebSocket-specific timeouts (long-lived connections)
+            proxy_connect_timeout 7d;
+            proxy_send_timeout 7d;
+            proxy_read_timeout 7d;
+        }
+
+        # ── Static Assets (hashed filenames = long cache) ─────────
+        location /assets/ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        # ── Vite manifest and other build artifacts ───────────────
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 7d;
+            add_header Cache-Control "public";
+            try_files $uri =404;
+        }
+
+        # ── SPA Fallback (React Router) ───────────────────────────
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # ── Health Check Endpoint ─────────────────────────────────
+        location /health {
+            access_log off;
+            return 200 '{"status":"ok"}';
+            add_header Content-Type application/json;
+        }
+
+        # ── Custom Error Pages ────────────────────────────────────
+        error_page 502 /502.html;
+        location = /502.html {
+            internal;
+            default_type text/html;
+            return 502 '<!DOCTYPE html><html><head><title>Service Unavailable</title></head><body style="background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif"><div style="text-align:center"><h1 style="font-size:4rem">Game Server Offline</h1><p style="font-size:1.5rem;color:#ccc">The backend is currently unreachable. Please try again in a moment.</p><button onclick="location.reload()" style="margin-top:2rem;padding:1rem 2rem;font-size:1.2rem;background:#e94560;color:white;border:none;border-radius:12px;cursor:pointer">Retry</button></div></body></html>';
+        }
+    }
+}

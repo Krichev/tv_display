@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  tv-display-prod:
+    image: ghcr.io/${GHCR_OWNER}/tv-display:prod-latest
+    container_name: tv_display_prod
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      # Points to Challenger PROD backend (port 8081)
+      # Use Docker host gateway to reach host-bound containers
+      BACKEND_URL: "host.docker.internal:8081"
+    networks:
+      - challenger_network
+    labels:
+      app: "tv-display"
+      environment: "production"
+      managed_by: "github-actions"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 64M
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  challenger_network:
+    external: true

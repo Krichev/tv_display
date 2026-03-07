@@ -3,8 +3,8 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { GameContextType, GamePhase, GameState, PlayerRole, RoomPlayer, Question } from '../types/game';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8082/ws-game';
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8082/api';
+const WS_URL = import.meta.env.VITE_WS_URL || '/ws-game';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function useGameRoom(roomCode: string): GameContextType {
   const [connectionStatus, setConnectionStatus] = useState<GameContextType['connectionStatus']>('CONNECTING');
@@ -18,6 +18,11 @@ export function useGameRoom(roomCode: string): GameContextType {
 
   const clientRef = useRef<Client | null>(null);
   const tokenRef = useRef<string | null>(localStorage.getItem('tv_token'));
+
+  // Resolve relative WS_URL to absolute for SockJS
+  const resolvedWsUrl = WS_URL.startsWith('http') 
+    ? WS_URL 
+    : `${window.location.origin}${WS_URL}`;
 
   // Timer logic
   useEffect(() => {
@@ -107,7 +112,7 @@ export function useGameRoom(roomCode: string): GameContextType {
     }
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(WS_URL),
+      webSocketFactory: () => new SockJS(resolvedWsUrl),
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },

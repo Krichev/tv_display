@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  tv-display-dev:
+    image: ghcr.io/${GHCR_OWNER}/tv-display:dev-latest
+    container_name: tv_display_dev
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      # Points to Challenger DEV backend (port 8080)
+      BACKEND_URL: "host.docker.internal:8080"
+    networks:
+      - challenger_network
+    labels:
+      app: "tv-display"
+      environment: "development"
+      managed_by: "github-actions"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 64M
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  challenger_network:
+    external: true
